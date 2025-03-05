@@ -15,6 +15,7 @@ const InterviewPage = () => {
   const [questions, setQuestions] = useState(initialQuestions || []);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [interviewData, setInterviewData] = useState([]);
 
   useEffect(() => {
     if (!initialQuestions?.length && role) {
@@ -52,6 +53,14 @@ const InterviewPage = () => {
       const result = response.data?.results?.[0] || {};
       setFeedback(result.feedback || "No feedback available.");
       setExampleAnswer(result.exampleAnswer || "No sample response available.");
+      
+      setInterviewData(prev => [...prev, {
+        question: questions[questionIndex],
+        answer: answer,
+        feedback: result.feedback,
+        example: result.exampleAnswer
+      }]);
+
       setShowFeedback(true);
     } catch (error) {
       console.error("Error submitting answer:", error);
@@ -65,12 +74,14 @@ const InterviewPage = () => {
     if (questionIndex < questions.length - 1) {
       setQuestionIndex(prev => prev + 1);
     } else {
-      const restart = window.confirm("Interview completed! Would you like to restart?");
-      if (restart) {
-        setQuestionIndex(0);
-      } else {
-        navigate('/');
-      }
+      navigate('/interview-review', {
+        state: {
+          role,
+          description,
+          interviewData,
+          resume: location.state?.resume
+        }
+      });
     }
     
     setAnswer("");
@@ -89,7 +100,35 @@ const InterviewPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-3xl">
+      <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-3xl relative">
+        {/* End & Review Button */}
+        <button
+        className="fixed bottom-20 right-6 py-3 px-6 rounded-full shadow-xl font-semibold 
+                 bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300
+                 hover:scale-105 z-50 flex items-center gap-2"
+        onClick={() => {
+          navigate('/generate-review', {
+            state: { role, description, interviewData }
+          });
+        }}
+      >
+         <svg 
+            className="w-5 h-5 animate-bounce" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth="2" 
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+            </svg>
+
+        End & Review
+      </button>
+
         <header className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">AI Interview Simulation</h1>
           <h2 className="text-lg text-gray-600 mt-1">
@@ -193,7 +232,7 @@ const InterviewPage = () => {
             </div>
 
             <button
-              className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors"
+              className="w-full py-3 bg-blue-500 hover:bg-blue-600  text-white rounded-lg font-semibold transition-colors"
               onClick={handleNextQuestion}
             >
               {questionIndex < questions.length - 1 ? (

@@ -7,6 +7,21 @@ import fs from "fs";
 import axios from "axios";
 import pdfjs from 'pdfjs-dist/legacy/build/pdf.js';
 const { getDocument } = pdfjs;
+import authRoutes from "./routes/auth.js";
+
+import dotenv from "dotenv";
+dotenv.config();
+
+
+
+// console.log(process.env); // Check if SMTP_USER and SMTP_PASS appear
+
+// import authRoutes from "./routes/authRoutes.js"; 
+
+
+
+
+
 
 // Ensure "uploads" directory exists
 const uploadDir = "./uploads";
@@ -20,6 +35,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+
+
 // Replace with your actual API key
 const API_KEY = "AIzaSyBpt_kCZkeK_EwdavXJZmbDKvRDmvBE-Kg";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro-002:generateContent?key=${API_KEY}`;
@@ -29,6 +47,8 @@ mongoose
   .connect("mongodb+srv://harshad:123478890@cluster0.sboae.mongodb.net/ai_interview?retryWrites=true&w=majority&appName=Cluster0")
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+
+  app.use("/api/auth", authRoutes);
 
 // Resume Schema & Model
 const ResumeSchema = new mongoose.Schema({
@@ -184,7 +204,39 @@ app.post("/submit-answer", async (req, res) => {
   }
 });
 
+// server.js
+app.post('/generate-review', async (req, res) => {
+  try {
+    const { interviewData, role, resume } = req.body;
+    
+    const prompt = `Analyze these interview responses for a ${role} position${resume ? ' (candidate resume available)' : ''}:
+    ${interviewData.map(item => `
+    Question: ${item.question}
+    Answer: ${item.answer}
+    Feedback: ${item.feedback}
+    `).join('\n')}
 
+    Provide a comprehensive review focusing on:
+    1. Overall strengths
+    2. Key improvement areas
+    3. Technical knowledge demonstration
+    4. Communication skills
+    5. Final recommendations
+    
+    Use concise bullet points and keep under 400 words.`;
+
+    const response = await axios.post(GEMINI_URL, {
+      contents: [{ role: "user", parts: [{ text: prompt }] }]
+    });
+
+    const feedback = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    res.json({ feedback });
+    
+  } catch (error) {
+    console.error("Review generation error:", error);
+    res.status(500).json({ error: "Failed to generate review" });
+  }
+});
 // Start Server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));

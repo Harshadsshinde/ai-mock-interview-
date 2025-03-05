@@ -1,20 +1,24 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom'; // ✅ No need to import BrowserRouter
 import LandingPage from './pages/LandingPage';
-// import Dashboard from './pages/Dashboard';
 import InterviewPage from './pages/InterviewPage';
-// import FeedbackPage from './pages/FeedbackPage';
+import InterviewReviewPage from './pages/ReviewPage';
+import Navbar from './components/Navbar';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
     return (
-        <Router>
+        <>
+            <Navbar />
             <Routes>
                 <Route path="/" element={<LandingPage />} />
-                {/* <Route path="/dashboard" element={<Dashboard />} /> */}
                 <Route path="/interview" element={<InterviewPage />} />
-                {/* <Route path="/feedback" element={<FeedbackPage />} /> */}
+                <Route path="/generate-review" element={<InterviewReviewPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
             </Routes>
-        </Router>
+        </>
     );
 }
 

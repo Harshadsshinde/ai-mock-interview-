@@ -9,14 +9,16 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
-  
   "dependencies": {
     "@google-cloud/speech": "^6.7.1",
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.0.9",
     "axios": "^1.8.1",
+    "framer-motion": "^12.4.7",
     "ibm-watson": "^10.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^7.2.0",
     "tailwindcss": "^4.0.9"
   },
